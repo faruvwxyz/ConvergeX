@@ -64,22 +64,26 @@ const Dashboard = () => {
           {/* Quick Actions */}
           {/* Stats & Actions Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* Monthly Spend Stat (Visual Only for now) */}
+            {/* Monthly Spend Stat (Now Dynamic) */}
             <div className="glass-card p-5 relative overflow-hidden">
               <div className="relative z-10">
-                <h4 className="text-gray-400 text-sm font-medium mb-1">Monthly Spend</h4>
+                <h4 className="text-gray-400 text-sm font-medium mb-1">Total Sent</h4>
                 <div className="flex items-end gap-2">
-                  <span className="text-2xl font-bold text-white">₹ 14,230</span>
-                  <span className="text-xs text-red-400 mb-1">↑ 12%</span>
+                  <span className="text-2xl font-bold text-white">
+                    ₹{transactions
+                      .filter(tx => tx.isSent)
+                      .reduce((sum, tx) => sum + (tx.amount || 0), 0)
+                      .toLocaleString('en-IN')}
+                  </span>
                 </div>
                 {/* Tiny Bar Chart Simulation */}
                 <div className="flex items-end gap-1 mt-3 h-8 opacity-50">
-                  <div className="w-1/6 bg-accent h-[40%] rounded-t-sm"></div>
-                  <div className="w-1/6 bg-accent h-[70%] rounded-t-sm"></div>
-                  <div className="w-1/6 bg-accent h-[30%] rounded-t-sm"></div>
-                  <div className="w-1/6 bg-accent h-[100%] rounded-t-sm"></div>
-                  <div className="w-1/6 bg-accent h-[60%] rounded-t-sm"></div>
-                  <div className="w-1/6 bg-accent h-[80%] rounded-t-sm"></div>
+                  <div className="w-1/6 bg-red-500 h-[40%] rounded-t-sm"></div>
+                  <div className="w-1/6 bg-red-500 h-[70%] rounded-t-sm"></div>
+                  <div className="w-1/6 bg-red-500 h-[30%] rounded-t-sm"></div>
+                  <div className="w-1/6 bg-red-500 h-[100%] rounded-t-sm"></div>
+                  <div className="w-1/6 bg-red-500 h-[60%] rounded-t-sm"></div>
+                  <div className="w-1/6 bg-red-500 h-[80%] rounded-t-sm"></div>
                 </div>
               </div>
             </div>
@@ -103,11 +107,17 @@ const Dashboard = () => {
               </div>
               <span className="font-medium text-white">Requests</span>
             </Link>
-            {/* Another stat or feature */}
+
+            {/* Income stat (Now Dynamic) */}
             <div className="glass-card p-5 flex flex-col justify-between">
               <div>
-                <h4 className="text-gray-400 text-sm font-medium">Income [Oct]</h4>
-                <span className="text-2xl font-bold text-green-400">+₹ 24,500</span>
+                <h4 className="text-gray-400 text-sm font-medium">Total Received</h4>
+                <span className="text-2xl font-bold text-green-400">
+                  +₹{transactions
+                    .filter(tx => !tx.isSent)
+                    .reduce((sum, tx) => sum + (tx.amount || 0), 0)
+                    .toLocaleString('en-IN')}
+                </span>
               </div>
               <div className="w-full bg-white/10 h-1 rounded-full mt-2">
                 <div className="bg-green-500 h-1 rounded-full w-[75%]"></div>

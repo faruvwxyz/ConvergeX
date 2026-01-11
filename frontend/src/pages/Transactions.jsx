@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import api from "../api/client";
+import { showToast } from "../utils/toast";
+import { Download } from "lucide-react";
 
 function Transactions() {
   const [transactions, setTransactions] = useState([]);
@@ -66,6 +68,29 @@ function Transactions() {
     }).format(amount);
   };
 
+  const handleExport = () => {
+    const csvContent = [
+      ['Date', 'From', 'To', 'Amount', 'Status', 'Type'],
+      ...filteredTransactions.map(txn => [
+        new Date(txn.date).toLocaleDateString(),
+        txn.fromUserName || txn.fromUpi,
+        txn.toUserName || txn.toUpi,
+        txn.amount,
+        txn.status || 'COMPLETED',
+        txn.isSent ? 'Sent' : 'Received'
+      ])
+    ].map(row => row.join(',')).join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `transactions-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+
+    showToast.success('Transactions exported successfully!');
+  };
+
   return (
     <div className="min-h-screen p-4 md:p-6">
       <motion.div
@@ -73,10 +98,23 @@ function Transactions() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <h1 className="text-3xl font-bold mb-2">Transaction History</h1>
-        <p className="text-gray-400 mb-8">
-          View all your payments and receipts in one place
-        </p>
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h1 className="text-3xl font-bold mb-2">Transaction History</h1>
+            <p className="text-gray-400">
+              View all your payments and receipts in one place
+            </p>
+          </div>
+          {filteredTransactions.length > 0 && (
+            <button
+              onClick={handleExport}
+              className="flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors"
+            >
+              <Download size={18} />
+              Export CSV
+            </button>
+          )}
+        </div>
 
         {/* Filters and Search */}
         <div className="flex flex-col md:flex-row gap-4 mb-6">
@@ -93,31 +131,28 @@ function Transactions() {
           <div className="flex gap-2">
             <button
               onClick={() => setFilterType("all")}
-              className={`px-4 py-2 rounded-lg ${
-                filterType === "all"
+              className={`px-4 py-2 rounded-lg ${filterType === "all"
                   ? "bg-blue-600 text-white"
                   : "bg-gray-800 text-gray-300"
-              }`}
+                }`}
             >
               All
             </button>
             <button
               onClick={() => setFilterType("sent")}
-              className={`px-4 py-2 rounded-lg ${
-                filterType === "sent"
+              className={`px-4 py-2 rounded-lg ${filterType === "sent"
                   ? "bg-red-600 text-white"
                   : "bg-gray-800 text-gray-300"
-              }`}
+                }`}
             >
               Sent
             </button>
             <button
               onClick={() => setFilterType("received")}
-              className={`px-4 py-2 rounded-lg ${
-                filterType === "received"
+              className={`px-4 py-2 rounded-lg ${filterType === "received"
                   ? "bg-green-600 text-white"
                   : "bg-gray-800 text-gray-300"
-              }`}
+                }`}
             >
               Received
             </button>
@@ -153,11 +188,10 @@ function Transactions() {
                       <td className="p-4">
                         <div className="flex items-center gap-3">
                           <div
-                            className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                              tx.isSent
+                            className={`w-10 h-10 rounded-full flex items-center justify-center ${tx.isSent
                                 ? "bg-red-900/30 text-red-400"
                                 : "bg-green-900/30 text-green-400"
-                            }`}
+                              }`}
                           >
                             {tx.isSent ? (
                               <svg
@@ -205,9 +239,8 @@ function Transactions() {
                       </td>
                       <td className="p-4">
                         <p
-                          className={`font-semibold ${
-                            tx.isSent ? "text-red-400" : "text-green-400"
-                          }`}
+                          className={`font-semibold ${tx.isSent ? "text-red-400" : "text-green-400"
+                            }`}
                         >
                           {tx.isSent ? "-" : "+"}
                           {formatAmount(tx.amount)}
@@ -215,13 +248,12 @@ function Transactions() {
                       </td>
                       <td className="p-4">
                         <span
-                          className={`px-3 py-1 rounded-full text-xs font-medium ${
-                            tx.status === "COMPLETED"
+                          className={`px-3 py-1 rounded-full text-xs font-medium ${tx.status === "COMPLETED"
                               ? "bg-green-900/30 text-green-400"
                               : tx.status === "PENDING"
-                              ? "bg-yellow-900/30 text-yellow-400"
-                              : "bg-gray-700 text-gray-300"
-                          }`}
+                                ? "bg-yellow-900/30 text-yellow-400"
+                                : "bg-gray-700 text-gray-300"
+                            }`}
                         >
                           {tx.status || "Completed"}
                         </span>
