@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "express": "^4.22.1",
+    "prop-types": "^15.8.1"
+  }
+}

@@ -1,0 +1,307 @@
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import api from "../api/client";
+
+function Transactions() {
+  const [transactions, setTransactions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterType, setFilterType] = useState("all");
+
+  useEffect(() => {
+    fetchTransactions();
+  }, []);
+
+  const fetchTransactions = async () => {
+    try {
+      setLoading(true);
+      const response = await api.get("/pay/history");
+      setTransactions(response.data);
+    } catch (error) {
+      console.error("Failed to fetch transactions:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Filter and search transactions
+  const filteredTransactions = transactions.filter((tx) => {
+    // Apply type filter
+    if (filterType !== "all") {
+      if (filterType === "sent" && !tx.isSent) return false;
+      if (filterType === "received" && tx.isSent) return false;
+    }
+
+    // Apply search filter
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      return (
+        tx.fromUserName?.toLowerCase().includes(query) ||
+        tx.toUserName?.toLowerCase().includes(query) ||
+        tx.fromUpi?.toLowerCase().includes(query) ||
+        tx.toUpi?.toLowerCase().includes(query) ||
+        tx.amount?.toString().includes(query)
+      );
+    }
+
+    return true;
+  });
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-IN", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
+  const formatAmount = (amount) => {
+    return new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
+      minimumFractionDigits: 2,
+    }).format(amount);
+  };
+
+  return (
+    <div className="min-h-screen p-4 md:p-6">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <h1 className="text-3xl font-bold mb-2">Transaction History</h1>
+        <p className="text-gray-400 mb-8">
+          View all your payments and receipts in one place
+        </p>
+
+        {/* Filters and Search */}
+        <div className="flex flex-col md:flex-row gap-4 mb-6">
+          <div className="flex-1">
+            <input
+              type="text"
+              placeholder="Search by name, UPI ID, or amount..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full p-3 rounded-lg bg-gray-800 border border-gray-700 focus:border-blue-500 focus:outline-none"
+            />
+          </div>
+
+          <div className="flex gap-2">
+            <button
+              onClick={() => setFilterType("all")}
+              className={`px-4 py-2 rounded-lg ${
+                filterType === "all"
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-800 text-gray-300"
+              }`}
+            >
+              All
+            </button>
+            <button
+              onClick={() => setFilterType("sent")}
+              className={`px-4 py-2 rounded-lg ${
+                filterType === "sent"
+                  ? "bg-red-600 text-white"
+                  : "bg-gray-800 text-gray-300"
+              }`}
+            >
+              Sent
+            </button>
+            <button
+              onClick={() => setFilterType("received")}
+              className={`px-4 py-2 rounded-lg ${
+                filterType === "received"
+                  ? "bg-green-600 text-white"
+                  : "bg-gray-800 text-gray-300"
+              }`}
+            >
+              Received
+            </button>
+          </div>
+        </div>
+
+        {/* Transaction List */}
+        {loading ? (
+          <div className="text-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mx-auto"></div>
+            <p className="mt-4 text-gray-400">Loading transactions...</p>
+          </div>
+        ) : filteredTransactions.length > 0 ? (
+          <div className="bg-gray-800 rounded-xl overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-900">
+                  <tr>
+                    <th className="text-left p-4">Transaction</th>
+                    <th className="text-left p-4">Date & Time</th>
+                    <th className="text-left p-4">Amount</th>
+                    <th className="text-left p-4">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredTransactions.map((tx) => (
+                    <motion.tr
+                      key={tx.id}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="border-b border-gray-700 hover:bg-gray-750"
+                    >
+                      <td className="p-4">
+                        <div className="flex items-center gap-3">
+                          <div
+                            className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                              tx.isSent
+                                ? "bg-red-900/30 text-red-400"
+                                : "bg-green-900/30 text-green-400"
+                            }`}
+                          >
+                            {tx.isSent ? (
+                              <svg
+                                className="w-5 h-5"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"
+                                />
+                              </svg>
+                            ) : (
+                              <svg
+                                className="w-5 h-5"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M13 7l5 5m0 0l-5 5m5-5H6"
+                                />
+                              </svg>
+                            )}
+                          </div>
+                          <div>
+                            <p className="font-medium">
+                              {tx.isSent ? "To: " : "From: "}
+                              {tx.isSent ? tx.toUserName : tx.fromUserName}
+                            </p>
+                            <p className="text-sm text-gray-400">
+                              {tx.isSent ? tx.toUpi : tx.fromUpi}
+                            </p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="p-4">
+                        <p className="text-gray-300">{formatDate(tx.date)}</p>
+                      </td>
+                      <td className="p-4">
+                        <p
+                          className={`font-semibold ${
+                            tx.isSent ? "text-red-400" : "text-green-400"
+                          }`}
+                        >
+                          {tx.isSent ? "-" : "+"}
+                          {formatAmount(tx.amount)}
+                        </p>
+                      </td>
+                      <td className="p-4">
+                        <span
+                          className={`px-3 py-1 rounded-full text-xs font-medium ${
+                            tx.status === "COMPLETED"
+                              ? "bg-green-900/30 text-green-400"
+                              : tx.status === "PENDING"
+                              ? "bg-yellow-900/30 text-yellow-400"
+                              : "bg-gray-700 text-gray-300"
+                          }`}
+                        >
+                          {tx.status || "Completed"}
+                        </span>
+                      </td>
+                    </motion.tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        ) : (
+          <div className="text-center py-16 bg-gray-800 rounded-2xl">
+            <div className="w-24 h-24 mx-auto mb-6 text-gray-600">
+              <svg
+                className="w-full h-full"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1}
+                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                />
+              </svg>
+            </div>
+            <h3 className="text-xl font-medium mb-2">
+              {searchQuery || filterType !== "all"
+                ? "No matching transactions"
+                : "No transactions yet"}
+            </h3>
+            <p className="text-gray-400 max-w-md mx-auto">
+              {searchQuery
+                ? "Try a different search term"
+                : "Your transaction history will appear here once you start sending or receiving money"}
+            </p>
+            {!searchQuery && filterType === "all" && (
+              <button
+                onClick={() => (window.location.href = "/send")}
+                className="mt-6 px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg font-medium"
+              >
+                Send Your First Payment
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* Summary Stats */}
+        {!loading && filteredTransactions.length > 0 && (
+          <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-gray-800 p-4 rounded-xl">
+              <p className="text-gray-400 text-sm">Total Transactions</p>
+              <p className="text-2xl font-bold">{filteredTransactions.length}</p>
+            </div>
+            <div className="bg-gray-800 p-4 rounded-xl">
+              <p className="text-gray-400 text-sm">Total Sent</p>
+              <p className="text-2xl font-bold text-red-400">
+                {formatAmount(
+                  filteredTransactions
+                    .filter((tx) => tx.isSent)
+                    .reduce((sum, tx) => sum + tx.amount, 0)
+                )}
+              </p>
+            </div>
+            <div className="bg-gray-800 p-4 rounded-xl">
+              <p className="text-gray-400 text-sm">Total Received</p>
+              <p className="text-2xl font-bold text-green-400">
+                {formatAmount(
+                  filteredTransactions
+                    .filter((tx) => !tx.isSent)
+                    .reduce((sum, tx) => sum + tx.amount, 0)
+                )}
+              </p>
+            </div>
+          </div>
+        )}
+      </motion.div>
+    </div>
+  );
+}
+
+export default Transactions;
