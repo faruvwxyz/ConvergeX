@@ -10,8 +10,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@metamask/detect-provider": "^2.0.0",
     "axios": "^1.13.2",
     "clsx": "^2.1.1",
+    "ethers": "^5.7.2",
     "framer-motion": "^12.24.12",
     "lucide-react": "^0.562.0",
     "react": "^19.2.0",
