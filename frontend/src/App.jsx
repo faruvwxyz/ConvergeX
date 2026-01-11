@@ -13,6 +13,7 @@ import Requests from "./pages/Requests";
 import Transactions from "./pages/Transactions";
 import Analytics from "./pages/Analytics";
 import Profile from "./pages/Profile";
+import CryptoPay from "./pages/CryptoPay";
 
 /* =========================
    Protected Route
@@ -139,6 +140,14 @@ function App() {
           element={
             <ProtectedRoute>
               <Profile />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/crypto-pay"
+          element={
+            <ProtectedRoute>
+              <CryptoPay />
             </ProtectedRoute>
           }
         />

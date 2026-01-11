@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
-import { LayoutDashboard, Send, ArrowLeftRight, History, LogOut, Menu, X, Wallet, BarChart2, User } from 'lucide-react';
+import { LayoutDashboard, Send, ArrowLeftRight, History, LogOut, Menu, X, Wallet, BarChart2, User, Coins } from 'lucide-react';
 import api from '../../api/client';
 
 const Navbar = () => {
@@ -39,6 +39,7 @@ const Navbar = () => {
         { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
         { name: 'Analytics', path: '/analytics', icon: BarChart2 },
         { name: 'Send Money', path: '/send', icon: Send },
+        { name: 'Crypto Pay', path: '/crypto-pay', icon: Coins },
         { name: 'Requests', path: '/requests', icon: ArrowLeftRight, badge: pendingCount },
         { name: 'Transactions', path: '/transactions', icon: History },
     ];

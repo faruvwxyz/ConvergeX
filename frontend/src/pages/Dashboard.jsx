@@ -4,13 +4,16 @@ import { pageVariants, listContainer } from "../lib/animations";
 import BalanceCard from "../components/ui/BalanceCard";
 import Skeleton from "../components/ui/Skeleton";
 import TransactionItem from "../components/ui/TransactionItem";
+import CryptoConnect from "../components/crypto/CryptoConnect";
 import api from "../api/client";
 import { useAuth } from "../context/AuthContext";
+import { useCrypto } from "../context/CryptoContext";
 import { ArrowRight, Send, ArrowLeftRight } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const Dashboard = () => {
   const { user } = useAuth();
+  const { exchangeRates } = useCrypto();
   const [balance, setBalance] = useState(0);
   const [upiId, setUpiId] = useState("");
   const [transactions, setTransactions] = useState([]);
@@ -127,8 +130,31 @@ const Dashboard = () => {
         </div>
 
         {/* RIGHT SIDE */}
-        <div className="lg:col-span-1">
-          <div className="glass-card h-full p-6">
+        <div className="lg:col-span-1 space-y-6">
+          {/* Crypto Wallet Section */}
+          <CryptoConnect />
+
+          {/* Exchange Rates */}
+          <div className="glass-card p-5">
+            <h3 className="text-lg font-bold text-white mb-4">Crypto Exchange Rates</h3>
+            <div className="space-y-3">
+              <div className="flex justify-between items-center p-2 rounded-lg hover:bg-white/5">
+                <span className="text-gray-400">1 USDC</span>
+                <span className="text-white">≈ ₹{(exchangeRates.usdcToUsd * exchangeRates.usdToInr).toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between items-center p-2 rounded-lg hover:bg-white/5">
+                <span className="text-gray-400">1 DAI</span>
+                <span className="text-white">≈ ₹{(exchangeRates.daiToUsd * exchangeRates.usdToInr).toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between items-center p-2 rounded-lg hover:bg-white/5">
+                <span className="text-gray-400">1 ETH</span>
+                <span className="text-white">≈ ₹{(exchangeRates.ethToUsd * exchangeRates.usdToInr).toLocaleString('en-IN')}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Recent Activity */}
+          <div className="glass-card p-6">
             <div className="flex items-center justify-between mb-6">
               <h3 className="font-bold text-xl text-white">
                 Recent Activity
